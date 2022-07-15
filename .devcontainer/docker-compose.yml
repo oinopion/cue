@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Elixir Version: 1.9, 1.10, 1.10.4, ...
+        VARIANT: "1.13.4"
+        # Phoenix Version: 1.4.17, 1.5.4, ...
+        PHOENIX_VERSION: "1.6.11"
+        # Node Version: 12, 14, ...
+        NODE_VERSION: "none"
+    environment:
+      PGUSER: cue
+      PGPASSWORD: cue
+      PGHOST: db
+
+    volumes:
+      - ..:/workspace:cached
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:db
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+
+    # Starts Postgres in non-durable mode which is faster
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      # The main "superuser" for postgres.
+      #
+      # NB: A user for the application is created separately, see
+      # `./scripts/create_postgres_user.sh`
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+volumes:
+  postgres-data:
