@@ -1,7 +1,6 @@
 #!/bin/bash
 # This script creates a user named "cue" with password "cue" for use in the
-# application.
-# TODO: Figure out how to output a message that user has been created.
+# application. Use this user instead of the main "postgres" superuser.
 
 
 # Unofficial Bash Strict Mode
@@ -14,7 +13,7 @@ export PGUSER="postgres"      # default postgres superuser
 export PGPASSWORD="postgres"  # ... and password
 export PGHOST="db"            # name of the postgres container
 
-psql --command -- << SQL
+psql << SQL
    DO
    \$do\$
    BEGIN

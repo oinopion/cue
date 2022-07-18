@@ -13,8 +13,10 @@ services:
         # Node Version: 12, 14, ...
         NODE_VERSION: "none"
     environment:
+      # These make using psql more convenient
       PGUSER: cue
       PGPASSWORD: cue
+      PGDATABASE: cue_dev
       PGHOST: db
 
     volumes:
