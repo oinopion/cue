@@ -22,7 +22,7 @@ Here's what you need to do on a fresh Mac:
 softwareupdate --install-rosetta
 
 # Install Homebrew
-# ... see brew.sh for instructions
+# ... see https://brew.sh for instructions
 
 # Use Homebrew to install VS Code and Docker Desktop
 brew install --cask docker visual-studio-code
