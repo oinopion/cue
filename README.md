@@ -1,4 +1,33 @@
-# Cue
+# Cue: A virtual waiting room
+
+Cue is an Open Source project aiming to make it easy to deploy and run *a
+virtual waiting room* (also knows as virtual queue or virtual waiting line).
+
+A virtual waiting room is useful to protect a website from sudden traffic
+spikes, ie. during flash sales.
+
+## Use cases
+*E-commerce*
+
+Imagine a flash sale of designer sneakers: an e-commerce website
+has 200 pairs of sneakers. They post an announcement to their social media that
+the sale will start on Friday noon. On Friday 11:30am, 20 000 people arrive on
+their website and all start refreshing the page in anticipation of sales start.
+Because of amount of traffic, the website suffers performance issues and
+potentially goes completely down. Even if they manage to sell the sneakers, the
+users will not have a great time: all 20 000 will have high expectations of
+actually purchasing the sneakers, but 19 800 of them will not be able to finish
+the transaction. Everyone will have to experience poor performance and
+intermittent errors.
+
+If the website uses a virtual waiting room, the situation will be much better:
+customers arriving on the website will be put in a virtual waiting room, issued
+a sequential number and will be released to the website at a constant speed that
+the website is able to handle well. Users with low number will have high
+expectation of making the purchase and a high chance of actually purchasing.
+Customer with high numbers will have progressively smaller chance of making the
+purchase but also lower expectation of being able to purchase.
+
 
 ## Development
 
