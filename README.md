@@ -44,6 +44,16 @@ containers using definitions from
   terminal in the main dev container. It's configured for Elixir development,
   ie. mix tasks, like `mix test` and `mix deps.get`
 
+* Debugging in VS Code
+
+  VS Code has a [built-in visual
+  debugger](https://code.visualstudio.com/docs/editor/debugging) which is
+  configured via [launch.json](.vscode/launch.json)). Currently this repo has
+  two debugger launch configs:
+
+  1. `mix test` - this runs all tests
+  2. `mix phx.server` - this runs Phoenix server
+
 * Running Postgres
 
   Postgres is started in it's own container. It's available both from within the
