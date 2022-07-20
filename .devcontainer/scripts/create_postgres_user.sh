@@ -7,13 +7,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# When Postgres container starts, it creates a default user and a default
+# database, which we're going to use here to create an app specific user. The
+# values here should be derived from "db" section in docker-compose.yml
+export DEFAULT_DATABASE_URL="postgres://postgres:postgres@db/postgres"
 export APP_USER="cue"
 
-export PGUSER="postgres"      # default postgres superuser
-export PGPASSWORD="postgres"  # ... and password
-export PGHOST="db"            # name of the postgres container
-
-psql << SQL
+psql $DEFAULT_DATABASE_URL << SQL
    DO
    \$do\$
    BEGIN
