@@ -87,7 +87,7 @@ containers using definitions from
 
   Postgres is started in it's own container. It's available both from within the
   main dev container (at `db:5432`) and from the host machine (via forwarded
-  port, at `localhost:5432`). When the container is firts created, an app-specific
+  port, at `localhost:5432`). When the container is first created, an app-specific
   use is created with username & password set to `cue`.
 
   The main dev container also has `psql` (postgres client) installed and you can
