@@ -8,7 +8,8 @@
 import Config
 
 config :cue,
-  ecto_repos: [Cue.Repo]
+  ecto_repos: [Cue.Repo],
+  generators: [binary_id: true]
 
 # Configures the endpoint
 config :cue, CueWeb.Endpoint,
