@@ -67,4 +67,73 @@ defmodule Cue.RoomsTest do
       assert %Ecto.Changeset{} = Rooms.change_room(room)
     end
   end
+
+  describe "room_visitors" do
+    alias Cue.Rooms.RoomVisitor
+
+    import Cue.RoomsFixtures
+
+    @invalid_attrs %{number: nil, visitor_id: nil}
+
+    setup do
+      {:ok, room: room_fixture()}
+    end
+
+    test "list_room_visitors/0 returns all room_visitors for a room", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+      assert Rooms.list_room_visitors(room) |> Repo.preload(:room) == [room_visitor]
+    end
+
+    test "get_room_visitor!/1 returns the room_visitor with given id", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+
+      assert Rooms.get_room_visitor!(room, room_visitor.visitor_id) |> Repo.preload(:room) ==
+               room_visitor
+    end
+
+    test "create_room_visitor/1 with valid data creates a room_visitor", %{room: room} do
+      valid_attrs = %{number: 42, visitor_id: "7488a646-e31f-11e4-aace-600308960662"}
+
+      assert {:ok, %RoomVisitor{} = room_visitor} = Rooms.create_room_visitor(room, valid_attrs)
+      assert room_visitor.number == 42
+      assert room_visitor.visitor_id == "7488a646-e31f-11e4-aace-600308960662"
+    end
+
+    test "create_room_visitor/1 with invalid data returns error changeset", %{room: room} do
+      assert {:error, %Ecto.Changeset{}} = Rooms.create_room_visitor(room, @invalid_attrs)
+    end
+
+    test "update_room_visitor/2 with valid data updates the room_visitor", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+      update_attrs = %{number: 43, visitor_id: "7488a646-e31f-11e4-aace-600308960668"}
+
+      assert {:ok, %RoomVisitor{} = room_visitor} =
+               Rooms.update_room_visitor(room_visitor, update_attrs)
+
+      assert room_visitor.number == 43
+      assert room_visitor.visitor_id == "7488a646-e31f-11e4-aace-600308960668"
+    end
+
+    test "update_room_visitor/2 with invalid data returns error changeset", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+      assert {:error, %Ecto.Changeset{}} = Rooms.update_room_visitor(room_visitor, @invalid_attrs)
+
+      assert room_visitor ==
+               Rooms.get_room_visitor!(room, room_visitor.visitor_id) |> Repo.preload(:room)
+    end
+
+    test "delete_room_visitor/1 deletes the room_visitor", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+      assert {:ok, %RoomVisitor{}} = Rooms.delete_room_visitor(room_visitor)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Rooms.get_room_visitor!(room, room_visitor.visitor_id)
+      end
+    end
+
+    test "change_room_visitor/1 returns a room_visitor changeset", %{room: room} do
+      room_visitor = room_visitor_fixture(room)
+      assert %Ecto.Changeset{} = Rooms.change_room_visitor(room_visitor)
+    end
+  end
 end

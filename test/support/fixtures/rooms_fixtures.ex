@@ -18,4 +18,18 @@ defmodule Cue.RoomsFixtures do
 
     room
   end
+
+  @doc """
+  Generate a room_visitor.
+  """
+  def room_visitor_fixture(room, attrs \\ %{}) do
+    attrs =
+      Enum.into(attrs, %{
+        number: 42,
+        visitor_id: "7488a646-e31f-11e4-aace-600308960662"
+      })
+
+    {:ok, room_visitor} = Cue.Rooms.create_room_visitor(room, attrs)
+    room_visitor
+  end
 end

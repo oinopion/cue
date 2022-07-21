@@ -10,6 +10,8 @@ defmodule Cue.Rooms.Room do
     field :visitors_counter, :integer, default: 0
     field :last_admitted_number, :integer
 
+    has_many :visitors, Cue.Rooms.RoomVisitor
+
     timestamps()
   end
 
