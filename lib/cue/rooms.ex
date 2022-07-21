@@ -200,4 +200,45 @@ defmodule Cue.Rooms do
   def change_room_visitor(%RoomVisitor{} = room_visitor, attrs \\ %{}) do
     RoomVisitor.changeset(room_visitor, attrs)
   end
+
+  @doc """
+  Joins a visitor to a room, assigning them a sequential number. This allows
+  them to be admitted at later point. If the visitor has joined room previously,
+  this will simply retrieve their existing data. Returns a `%RoomVisitor{}`.
+  """
+  def assign_number(%Room{id: room_id}, visitor_id) do
+    # Each user joining room increments room's `visitors_counter`, making it a
+    # contentious resource in a hot path.  This query increments room counter
+    # and then uses that updated counter to insert into room_visitors table. It
+    # will return inserted room_visitor, including the assigned number. This all
+    # happens in the database, minimising time spent holding write lock on rooms
+    # row and also avoiding race contitions related to doing the queries
+    # separately.
+    # TODO: Is there a way to do this in more Elixir way?
+    # TODO: This mixes abstraction levels, how to make this nicer?
+    # TODO: This probably only works on Postgres, how to make this work on SQLite?
+    query = """
+    /* Cue.Rooms.assign_number/2 */
+    WITH increment_room_counter AS (
+      UPDATE rooms
+      SET visitors_counter = visitors_counter + 1
+      WHERE id = $1
+      RETURNING id, visitors_counter
+    )
+    INSERT INTO room_visitors(room_id, visitor_id, number, inserted_at, updated_at)
+    SELECT i.id, $2, i.visitors_counter, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    FROM increment_room_counter i
+    RETURNING room_id, visitor_id, number, inserted_at, updated_at
+    """
+
+    params = [Ecto.UUID.dump!(room_id), Ecto.UUID.dump!(visitor_id)]
+
+    case Ecto.Adapters.SQL.query(Cue.Repo, query, params) do
+      {:ok, %{num_rows: 1, columns: columns, rows: [row]}} ->
+        {:ok, Repo.load(RoomVisitor, {columns, row})}
+
+      {:error, _error} ->
+        :error
+    end
+  end
 end

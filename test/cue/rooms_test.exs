@@ -1,5 +1,5 @@
 defmodule Cue.RoomsTest do
-  use Cue.DataCase
+  use Cue.DataCase, async: true
 
   alias Cue.Rooms
 
@@ -69,7 +69,7 @@ defmodule Cue.RoomsTest do
   end
 
   describe "room_visitors" do
-    alias Cue.Rooms.RoomVisitor
+    alias Cue.Rooms.{Room, RoomVisitor}
 
     import Cue.RoomsFixtures
 
@@ -84,14 +84,14 @@ defmodule Cue.RoomsTest do
       assert Rooms.list_room_visitors(room) |> Repo.preload(:room) == [room_visitor]
     end
 
-    test "get_room_visitor!/1 returns the room_visitor with given id", %{room: room} do
+    test " get_room_visitor!/2 returns the room_visitor with given id", %{room: room} do
       room_visitor = room_visitor_fixture(room)
 
       assert Rooms.get_room_visitor!(room, room_visitor.visitor_id) |> Repo.preload(:room) ==
                room_visitor
     end
 
-    test "create_room_visitor/1 with valid data creates a room_visitor", %{room: room} do
+    test "create_room_visitor/2 with valid data creates a room_visitor", %{room: room} do
       valid_attrs = %{number: 42, visitor_id: "7488a646-e31f-11e4-aace-600308960662"}
 
       assert {:ok, %RoomVisitor{} = room_visitor} = Rooms.create_room_visitor(room, valid_attrs)
@@ -99,7 +99,7 @@ defmodule Cue.RoomsTest do
       assert room_visitor.visitor_id == "7488a646-e31f-11e4-aace-600308960662"
     end
 
-    test "create_room_visitor/1 with invalid data returns error changeset", %{room: room} do
+    test "create_room_visitor/2 with invalid data returns error changeset", %{room: room} do
       assert {:error, %Ecto.Changeset{}} = Rooms.create_room_visitor(room, @invalid_attrs)
     end
 
@@ -134,6 +134,42 @@ defmodule Cue.RoomsTest do
     test "change_room_visitor/1 returns a room_visitor changeset", %{room: room} do
       room_visitor = room_visitor_fixture(room)
       assert %Ecto.Changeset{} = Rooms.change_room_visitor(room_visitor)
+    end
+
+    test "assign_number/2 creates a correct %RoomVisitor{}", %{room: room} do
+      visitor_id = Ecto.UUID.generate()
+      start = DateTime.utc_now()
+      assert {:ok, %RoomVisitor{} = rv} = Rooms.assign_number(room, visitor_id)
+      stop = DateTime.utc_now()
+
+      assert rv.visitor_id == visitor_id
+      assert rv.room_id == room.id
+      assert rv.number > 0
+      assert start <= rv.inserted_at <= stop
+      assert rv.inserted_at == rv.updated_at
+    end
+
+    test "assign_number/2 updates room visitors_counter", %{room: room} do
+      assert {:ok, %RoomVisitor{}} = Rooms.assign_number(room, Ecto.UUID.generate())
+      room = Repo.get(Room, room.id)
+      assert room.visitors_counter == 1
+
+      assert {:ok, %RoomVisitor{}} = Rooms.assign_number(room, Ecto.UUID.generate())
+      room = Repo.get(Room, room.id)
+      assert room.visitors_counter == 2
+    end
+
+    test "assign_number/2 returns new %RoomVisitor{} with sequential numbers", %{room: room} do
+      assert {:ok, %RoomVisitor{number: 1}} = Rooms.assign_number(room, Ecto.UUID.generate())
+      assert {:ok, %RoomVisitor{number: 2}} = Rooms.assign_number(room, Ecto.UUID.generate())
+    end
+
+    test "assign_number/2 doesn't increment counter on repeated joins", %{room: room} do
+      visitor_id = Ecto.UUID.generate()
+      assert {:ok, _} = Rooms.assign_number(room, visitor_id)
+      assert :error = Rooms.assign_number(room, visitor_id)
+      room = Repo.get(Room, room.id)
+      assert room.visitors_counter == 1
     end
   end
 end
