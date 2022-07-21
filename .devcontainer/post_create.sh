@@ -12,6 +12,10 @@ echo "Creating app user in Postgres..."
 .devcontainer/scripts/create_postgres_user.sh
 echo "Done."
 
+echo "Linking .zshrc..."
+ln -fs /workspace/.devcontainer/configs/.zshrc ~/.zshrc
+echo "Done."
+
 echo "Running mix setup..."
 mix setup
 echo "Done."
