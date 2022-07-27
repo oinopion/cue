@@ -8,7 +8,7 @@ defmodule Cue.Rooms.Room do
     field :name, :string
     field :target_url, :string
     field :visitors_counter, :integer, default: 0
-    field :last_admitted_number, :integer
+    field :last_admitted_number, :integer, default: 0
 
     has_many :visitors, Cue.Rooms.RoomVisitor
 

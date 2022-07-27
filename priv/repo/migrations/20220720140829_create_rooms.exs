@@ -7,7 +7,7 @@ defmodule Cue.Repo.Migrations.CreateRooms do
       add :name, :string
       add :target_url, :string
       add :visitors_counter, :integer, default: 0, null: false
-      add :last_admitted_number, :integer
+      add :last_admitted_number, :integer, default: 0, null: false
 
       timestamps()
     end
