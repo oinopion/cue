@@ -37,6 +37,10 @@ defmodule Cue.Rooms do
   """
   def get_room!(id), do: Repo.get!(Room, id)
 
+  def get_room_by_name!(name) do
+    Repo.get_by!(Room, name: name)
+  end
+
   @doc """
   Creates a room.
 
@@ -236,6 +240,51 @@ defmodule Cue.Rooms do
     case Ecto.Adapters.SQL.query(Cue.Repo, query, params) do
       {:ok, %{num_rows: 1, columns: columns, rows: [row]}} ->
         {:ok, Repo.load(RoomVisitor, {columns, row})}
+
+      {:error, _error} ->
+        :error
+    end
+  end
+
+  @doc """
+  Returns true if the visotor has been admitted into the room
+
+  ## Examples
+
+    iex> admitted?(room, room_visitor)
+    false
+  """
+  def admitted?(%Room{} = room, %RoomVisitor{} = visitor) do
+    case room.last_admitted_number do
+      number when number >= visitor.number -> true
+      _ -> false
+    end
+  end
+
+  @doc """
+  Makes next `how_many` numbers admitted. It returns the room in a the new state.
+  Note that this is safe from race contitions and will return in a fresh state.
+  that is different
+
+  ## Examples
+  iex> admit_next(room, 5)
+  {:ok, %Room{}}
+
+  """
+  def admit_next(%Room{} = room, how_many) when how_many > 0 do
+    query = """
+    /* Cue.Rooms.admit_next/2 */
+    UPDATE rooms
+    SET last_admitted_number = LEAST(last_admitted_number + $1, visitors_counter)
+    WHERE id = $2
+    RETURNING rooms.*
+    """
+
+    params = [how_many, Ecto.UUID.dump!(room.id)]
+
+    case Repo.query(query, params) do
+      {:ok, %{num_rows: 1, columns: columns, rows: [row]}} ->
+        {:ok, Repo.load(Room, {columns, row})}
 
       {:error, _error} ->
         :error

@@ -30,7 +30,7 @@ defmodule Cue.RoomsTest do
       assert room.name == "some name"
       assert room.target_url == "some target_url"
       assert room.visitors_counter == 0
-      assert room.last_admitted_number == nil
+      assert room.last_admitted_number == 0
     end
 
     test "create_room/1 with invalid data returns error changeset" do
@@ -84,7 +84,7 @@ defmodule Cue.RoomsTest do
       assert Rooms.list_room_visitors(room) |> Repo.preload(:room) == [room_visitor]
     end
 
-    test " get_room_visitor!/2 returns the room_visitor with given id", %{room: room} do
+    test "get_room_visitor!/2 returns the room_visitor with given id", %{room: room} do
       room_visitor = room_visitor_fixture(room)
 
       assert Rooms.get_room_visitor!(room, room_visitor.visitor_id) |> Repo.preload(:room) ==
@@ -170,6 +170,24 @@ defmodule Cue.RoomsTest do
       assert :error = Rooms.assign_number(room, visitor_id)
       room = Repo.get(Room, room.id)
       assert room.visitors_counter == 1
+    end
+
+    test "admitted?/2 is false for new visitor", %{room: room} do
+      {:ok, visitor} = Rooms.assign_number(room, Ecto.UUID.generate())
+      refute Rooms.admitted?(room, visitor)
+    end
+
+    test "admit_next/2 can admit people one by one sequentially", %{room: room} do
+      {:ok, visitor_1} = Rooms.assign_number(room, Ecto.UUID.generate())
+      {:ok, visitor_2} = Rooms.assign_number(room, Ecto.UUID.generate())
+
+      {:ok, room} = Rooms.admit_next(room, 1)
+      assert Rooms.admitted?(room, visitor_1)
+      refute Rooms.admitted?(room, visitor_2)
+
+      {:ok, room} = Rooms.admit_next(room, 1)
+      assert Rooms.admitted?(room, visitor_1)
+      assert Rooms.admitted?(room, visitor_2)
     end
   end
 end
